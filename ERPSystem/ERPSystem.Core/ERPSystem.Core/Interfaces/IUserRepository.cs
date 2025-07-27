@@ -5,9 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using ERPSystem.Core.Entities;
 
-namespace ERPSystem.Core.Interfaces
+namespace ERPSystem.Core.Interfaces;
+
+public interface IUserRepository:IGenericRepository<User>
 {
-    public interface IUserRepository:IGenericRepository<User>
-    {
-    }
 }
