@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ERPSystem.Infrastructure.DBContext;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ERPSystem.Infrastructure.DBContext;
 
 namespace ERPSystem.Infrastructure.Registration;
 
