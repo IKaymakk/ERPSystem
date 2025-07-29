@@ -41,12 +41,8 @@ namespace ERPSystem.Core.MappingProfiles.Extensions
             IMapper mapper,
             int totalCount)
         {
-            var items = source
-                .Skip((request.PageNumber - 1) * request.PageSize)
-                .Take(request.PageSize);
-
-            var mappedItems = mapper.Map<IEnumerable<TDestination>>(items);
-
+            // Skip/Take'i kaldır - Repository zaten yapmış
+            var mappedItems = mapper.Map<IEnumerable<TDestination>>(source);
             return new PagedResultDto<TDestination>
             {
                 Items = mappedItems,

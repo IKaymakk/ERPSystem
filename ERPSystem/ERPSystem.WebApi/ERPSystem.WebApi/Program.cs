@@ -2,6 +2,7 @@ using ERPSystem.Infrastructure.Registration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ERPSystem.Application.Registration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,8 +63,8 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
-
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddApplicationServices(builder.Configuration);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

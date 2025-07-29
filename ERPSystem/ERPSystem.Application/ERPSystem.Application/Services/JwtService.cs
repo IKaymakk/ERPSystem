@@ -11,8 +11,9 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using ERPSystem.Application.Interfaces;
 
-namespace ERPSystem.Infrastructure.Repositories;
+namespace ERPSystem.Application.Services;
 
 public class JwtService:IJwtService
 {

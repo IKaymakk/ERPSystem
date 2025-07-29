@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ERPSystem.Core.DTOs.Auth;
 
 namespace ERPSystem.Core.MappingProfiles
 {
@@ -41,11 +42,9 @@ namespace ERPSystem.Core.MappingProfiles
                 .ForMember(dest => dest.LastLoginDate, opt => opt.Ignore())
                 .ForMember(dest => dest.Role, opt => opt.Ignore());
 
-            // User -> LoginResponseDto.User
-            CreateMap<User, UserDto>()
-                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Role.Name));
 
-            CreateMap(typeof(PagedResultDto<>), typeof(PagedResultDto<>));
+            CreateMap<PagedResultDto<User>, PagedResultDto<UserDto>>();
+
         }
     }
 }

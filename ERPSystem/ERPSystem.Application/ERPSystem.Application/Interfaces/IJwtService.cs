@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ERPSystem.Core.Entities;
 
-namespace ERPSystem.Core.Interfaces;
+namespace ERPSystem.Application.Interfaces;
 public interface IJwtService
 {
     string GenerateToken(User user);
