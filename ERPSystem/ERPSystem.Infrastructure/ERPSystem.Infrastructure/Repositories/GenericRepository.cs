@@ -21,22 +21,36 @@ namespace ERPSystem.Infrastructure.Repositories
             _dbSet = context.Set<T>();
         }
 
-        // ID ile tek kayıt getir
+        // ID ile tek kayıt getir - READ ONLY için AsNoTracking
         public virtual async Task<T?> GetByIdAsync(int id, params Expression<Func<T, object>>[] includes)
         {
-            IQueryable<T> query = _dbSet.Where(x => x.Id == id && x.IsActive);
+            IQueryable<T> query = _dbSet
+                .AsNoTracking() // ✅ READ ONLY - AsNoTracking eklendi
+                .Where(x => x.Id == id && x.IsActive);
 
             query = ApplyIncludes(query, includes);
 
             return await query.FirstOrDefaultAsync();
         }
 
-        // Tüm kayıtları getir (filtrelenebilir)
+        // Update için GetByIdAsync (tracking gerekli)
+        public virtual async Task<T?> GetByIdForUpdateAsync(int id, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet.Where(x => x.Id == id && x.IsActive); // Tracking aktif
+
+            query = ApplyIncludes(query, includes);
+
+            return await query.FirstOrDefaultAsync();
+        }
+
+        // Tüm kayıtları getir - READ ONLY için AsNoTracking
         public async Task<IEnumerable<T>> GetAllAsync(
             Expression<Func<T, bool>>? filter = null,
             params Expression<Func<T, object>>[] includes)
         {
-            IQueryable<T> query = _dbSet.Where(x => x.IsActive);
+            IQueryable<T> query = _dbSet
+                .AsNoTracking() // ✅ READ ONLY - AsNoTracking eklendi
+                .Where(x => x.IsActive);
 
             if (filter != null)
                 query = query.Where(filter);
@@ -46,20 +60,34 @@ namespace ERPSystem.Infrastructure.Repositories
             return await query.ToListAsync();
         }
 
-        // Koşula göre kayıtları bul
         public async Task<IEnumerable<T>> FindAsync(
             Expression<Func<T, bool>> predicate,
             params Expression<Func<T, object>>[] includes)
         {
-            IQueryable<T> query = _dbSet.Where(x => x.IsActive).Where(predicate);
+            IQueryable<T> query = _dbSet
+                .AsNoTracking()
+                .Where(x => x.IsActive)
+                .Where(predicate);
 
             query = ApplyIncludes(query, includes);
 
             return await query.ToListAsync();
         }
 
-        // İlk kaydı getir veya null döndür
         public async Task<T?> FirstOrDefaultAsync(
+            Expression<Func<T, bool>> predicate,
+            params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet
+                .AsNoTracking()
+                .Where(x => x.IsActive);
+
+            query = ApplyIncludes(query, includes);
+
+            return await query.FirstOrDefaultAsync(predicate);
+        }
+
+        public async Task<T?> FirstOrDefaultForUpdateAsync(
             Expression<Func<T, bool>> predicate,
             params Expression<Func<T, object>>[] includes)
         {
@@ -70,7 +98,6 @@ namespace ERPSystem.Infrastructure.Repositories
             return await query.FirstOrDefaultAsync(predicate);
         }
 
-        // Sayfalanmış veri getir
         public async Task<(IEnumerable<T> Data, int TotalCount)> GetPagedAsync(
             int pageNumber,
             int pageSize,
@@ -78,25 +105,21 @@ namespace ERPSystem.Infrastructure.Repositories
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
             params Expression<Func<T, object>>[] includes)
         {
-            IQueryable<T> query = _dbSet.Where(x => x.IsActive);
+            IQueryable<T> query = _dbSet
+                .AsNoTracking();
 
-            // Filter uygula
             if (filter != null)
                 query = query.Where(filter);
 
-            // Toplam sayıyı al (include'lardan önce)
             var totalCount = await query.CountAsync();
 
-            // Include'ları uygula
             query = ApplyIncludes(query, includes);
 
-            // Sıralama uygula
             if (orderBy != null)
                 query = orderBy(query);
             else
                 query = query.OrderByDescending(x => x.CreatedDate);
 
-            // Sayfalama uygula
             var data = await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -105,10 +128,11 @@ namespace ERPSystem.Infrastructure.Repositories
             return (data, totalCount);
         }
 
-        // Kayıt sayısını getir
         public async Task<int> CountAsync(Expression<Func<T, bool>>? filter = null)
         {
-            IQueryable<T> query = _dbSet.Where(x => x.IsActive);
+            IQueryable<T> query = _dbSet
+                .AsNoTracking()
+                .Where(x => x.IsActive);
 
             if (filter != null)
                 query = query.Where(filter);
@@ -116,13 +140,14 @@ namespace ERPSystem.Infrastructure.Repositories
             return await query.CountAsync();
         }
 
-        // Kayıt var mı kontrol et
         public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
         {
-            return await _dbSet.Where(x => x.IsActive).AnyAsync(predicate);
+            return await _dbSet
+                .AsNoTracking()
+                .Where(x => x.IsActive)
+                .AnyAsync(predicate);
         }
 
-        // Yeni kayıt ekle
         public async Task<T> AddAsync(T entity)
         {
             entity.CreatedDate = DateTime.Now;
@@ -134,7 +159,6 @@ namespace ERPSystem.Infrastructure.Repositories
             return entity;
         }
 
-        // Toplu kayıt ekle
         public async Task<IEnumerable<T>> AddRangeAsync(IEnumerable<T> entities)
         {
             var entityList = entities.ToList();
@@ -151,7 +175,6 @@ namespace ERPSystem.Infrastructure.Repositories
             return entityList;
         }
 
-        // Kayıt güncelle
         public async Task UpdateAsync(T entity)
         {
             entity.UpdatedDate = DateTime.Now;
@@ -159,7 +182,6 @@ namespace ERPSystem.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        // Toplu kayıt güncelle
         public async Task UpdateRangeAsync(IEnumerable<T> entities)
         {
             var entityList = entities.ToList();
@@ -173,17 +195,15 @@ namespace ERPSystem.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        // Soft delete (ID ile)
         public async Task DeleteAsync(int id)
         {
-            var entity = await GetByIdAsync(id);
+            var entity = await GetByIdForUpdateAsync(id);
             if (entity != null)
             {
                 await DeleteAsync(entity);
             }
         }
 
-        // Soft delete (entity ile)
         public async Task DeleteAsync(T entity)
         {
             entity.IsActive = false;
@@ -191,7 +211,7 @@ namespace ERPSystem.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        // Toplu soft delete
+        // Toplu soft delete - Tracking gerekli
         public async Task DeleteRangeAsync(IEnumerable<T> entities)
         {
             var entityList = entities.ToList();
@@ -204,7 +224,6 @@ namespace ERPSystem.Infrastructure.Repositories
 
             await _context.SaveChangesAsync();
         }
-
 
         // Include'ları uygula
         private static IQueryable<T> ApplyIncludes(IQueryable<T> query, Expression<Func<T, object>>[]? includes)

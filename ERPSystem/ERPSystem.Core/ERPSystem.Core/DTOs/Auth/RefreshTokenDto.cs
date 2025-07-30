@@ -1,5 +1,6 @@
-﻿public class RefreshTokenDto
+﻿namespace ERPSystem.Core.DTOs.Auth;
+
+public class RefreshTokenDto
 {
-    public string AccessToken { get; set; }
-    public string RefreshToken { get; set; }
+    public string RefreshToken { get; set; } = string.Empty;
 }

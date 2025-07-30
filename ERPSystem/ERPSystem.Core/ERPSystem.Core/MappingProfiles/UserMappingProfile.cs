@@ -23,7 +23,7 @@ namespace ERPSystem.Core.MappingProfiles
             // CreateUserDto -> User
             CreateMap<CreateUserDto, User>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // Will be set in service
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(dest => dest.UpdatedDate, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => "System"))
@@ -40,7 +40,8 @@ namespace ERPSystem.Core.MappingProfiles
                 .ForMember(dest => dest.UpdatedDate, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.LastLoginDate, opt => opt.Ignore())
-                .ForMember(dest => dest.Role, opt => opt.Ignore());
+                .ForMember(dest => dest.Role, opt => opt.Ignore())
+                .ReverseMap();
 
 
             CreateMap<PagedResultDto<User>, PagedResultDto<UserDto>>();

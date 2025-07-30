@@ -64,22 +64,16 @@ namespace ERPSystem.Infrastructure.Repositories
         public async Task<PagedResultDto<User>> GetPagedUsersAsync(UserFilterDto filter)
         {
             //filter 
-            Expression<Func<User, bool>>? filterExpression = null;
-            if (filter.RoleId.HasValue || filter.IsActive.HasValue ||
-                filter.CreatedDateFrom.HasValue || filter.CreatedDateTo.HasValue ||
-                !string.IsNullOrEmpty(filter.SearchTerm))
-            {
-                filterExpression = x =>
-                    (!filter.RoleId.HasValue || x.RoleId == filter.RoleId.Value) &&
-                    (!filter.IsActive.HasValue || x.IsActive == filter.IsActive.Value) &&
-                    (!filter.CreatedDateFrom.HasValue || x.CreatedDate >= filter.CreatedDateFrom.Value) &&
-                    (!filter.CreatedDateTo.HasValue || x.CreatedDate <= filter.CreatedDateTo.Value) &&
-                    (string.IsNullOrEmpty(filter.SearchTerm) ||
-                     x.FirstName.ToLower().Contains(filter.SearchTerm.ToLower()) ||
-                     x.LastName.ToLower().Contains(filter.SearchTerm.ToLower()) ||
-                     x.Username.ToLower().Contains(filter.SearchTerm.ToLower()) ||
-                     x.Email.ToLower().Contains(filter.SearchTerm.ToLower()));
-            }
+            Expression<Func<User, bool>>? filterExpression = x =>
+                (!filter.RoleId.HasValue || x.RoleId == filter.RoleId.Value) &&
+                (!filter.IsActive.HasValue || x.IsActive == filter.IsActive.Value) &&
+                (!filter.CreatedDateFrom.HasValue || x.CreatedDate >= filter.CreatedDateFrom.Value) &&
+                (!filter.CreatedDateTo.HasValue || x.CreatedDate <= filter.CreatedDateTo.Value) &&
+                (string.IsNullOrEmpty(filter.SearchTerm) ||
+                 x.FirstName.ToLower().Contains(filter.SearchTerm.ToLower()) ||
+                 x.LastName.ToLower().Contains(filter.SearchTerm.ToLower()) ||
+                 x.Username.ToLower().Contains(filter.SearchTerm.ToLower()) ||
+                 x.Email.ToLower().Contains(filter.SearchTerm.ToLower()));
 
             //order by
             Func<IQueryable<User>, IOrderedQueryable<User>>? orderBy = null;
@@ -199,6 +193,16 @@ namespace ERPSystem.Infrastructure.Repositories
 
             return await base.GetByIdAsync(id, allIncludes.ToArray());
         }
+
+        public async Task<User?> GetByRefreshTokenForUpdateAsync(string refreshToken)
+        {
+            return await FirstOrDefaultForUpdateAsync(
+                x => x.RefreshToken == refreshToken,
+                x => x.Role
+            );
+        }
+
+
     }
 }
 

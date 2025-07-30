@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using ERPSystem.Application.Interfaces;
+using ERPSystem.Core.DTOs.Common;
 using ERPSystem.Core.DTOs.User;
 using ERPSystem.Core.Entities;
 using ERPSystem.Core.Exceptions;
@@ -38,4 +39,44 @@ public class UserService : GenericService<User>, IUserService
 
         await _userRepository.AddAsync(user);
     }
+
+    public async Task<PagedResultDto<UserDto>> GetAllUsersAsync(UserFilterDto filter)
+    {
+        var pagedUsers = await _userRepository.GetPagedUsersAsync(filter);
+        var userDtos = _mapper.Map<List<UserDto>>(pagedUsers.Items);
+        return new PagedResultDto<UserDto>
+        {
+            Items = userDtos,
+            TotalCount = pagedUsers.TotalCount,
+            PageNumber = pagedUsers.PageNumber,
+            PageSize = pagedUsers.PageSize
+        };
+    }
+
+    public async Task<UserDto> GetUserByIdAsync(int id)
+    {
+        var user = await _repository.GetByIdAsync(id, x=>x.Role);
+        var mappedUser = _mapper.Map<UserDto>(user);
+        return mappedUser;
+    }
+    public async Task<UpdateUserDto> UpdateUserAsync(int userId, UpdateUserDto dto)
+    {
+        var existingUser = await _userRepository.GetByIdAsync(userId);
+        if (existingUser == null)
+            throw new BusinessException("Kullanıcı bulunamadı.");
+
+        if (!string.IsNullOrEmpty(dto.Username) &&
+            dto.Username != existingUser.Username)
+        {
+            if (await _userRepository.ExistsByUsernameAsync(dto.Username, userId))
+                throw new BusinessException("Bu kullanıcı adı zaten kullanımda.");
+        }
+
+        _mapper.Map(dto, existingUser);
+        await _userRepository.UpdateAsync(existingUser);
+
+        var updatedDto = _mapper.Map<UpdateUserDto>(existingUser);
+        return updatedDto;
+    }
+
 }

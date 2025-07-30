@@ -1,12 +1,15 @@
-﻿using System;
+﻿using ERPSystem.Application.Interfaces;
+using ERPSystem.Application.Services;
+using ERPSystem.Core.Validators.User;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ERPSystem.Application.Interfaces;
 using ERPSystem.Application.Services;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+
 
 namespace ERPSystem.Application.Registration
 {
@@ -20,7 +23,8 @@ namespace ERPSystem.Application.Registration
             services.AddScoped(typeof(IUserService), typeof(UserService));
             services.AddScoped(typeof(IPasswordService), typeof(PasswordService));
             services.AddScoped(typeof(IJwtService), typeof(JwtService));
-
+            services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<IAuthService, AuthService>();
             return services;
         }
     }

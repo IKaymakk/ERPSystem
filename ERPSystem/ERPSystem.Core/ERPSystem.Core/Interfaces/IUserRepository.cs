@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace ERPSystem.Core.Interfaces;
 
-public interface IUserRepository:IGenericRepository<User>
+public interface IUserRepository : IGenericRepository<User>
 {
     Task<User> GetByEmailAsync(string email);
     Task<User> GetByUsernameAsync(string username);
-    //Task<User> GetByRefreshTokenAsync(string refreshToken);
+    Task<User?> GetByRefreshTokenForUpdateAsync(string refreshToken);
     Task<bool> ExistsByEmailAsync(string email);
     Task<bool> ExistsByUsernameAsync(string username);
     Task<bool> ExistsByEmailAsync(string email, int excludeUserId);
