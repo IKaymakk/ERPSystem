@@ -12,43 +12,16 @@ namespace ERPSystem.Core.MappingProfiles.Extensions
 {
     public static class MappingExtensions
     {
-        public static async Task<PagedResultDto<TDestination>> ToPagedResultAsync<TSource, TDestination>(
-            this IQueryable<TSource> source,
-            PagedRequestDto request,
-            IMapper mapper)
+        public static PagedResultDto<TDestination> ToPagedResult<TSource, TDestination>(this PagedResultDto<TSource> source, IMapper mapper)
         {
-            var totalCount = await source.CountAsync();
-
-            var items = await source
-                .Skip((request.PageNumber - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync();
-
-            var mappedItems = mapper.Map<IEnumerable<TDestination>>(items);
+            var mappedItems = mapper.Map<IEnumerable<TDestination>>(source.Items);
 
             return new PagedResultDto<TDestination>
             {
                 Items = mappedItems,
-                TotalCount = totalCount,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize
-            };
-        }
-
-        public static PagedResultDto<TDestination> ToPagedResult<TSource, TDestination>(
-            this IEnumerable<TSource> source,
-            PagedRequestDto request,
-            IMapper mapper,
-            int totalCount)
-        {
-            // Skip/Take'i kaldır - Repository zaten yapmış
-            var mappedItems = mapper.Map<IEnumerable<TDestination>>(source);
-            return new PagedResultDto<TDestination>
-            {
-                Items = mappedItems,
-                TotalCount = totalCount,
-                PageNumber = request.PageNumber,
-                PageSize = request.PageSize
+                TotalCount = source.TotalCount,
+                PageNumber = source.PageNumber,
+                PageSize = source.PageSize
             };
         }
     }

@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using ERPSystem.Application.Interfaces;
 using ERPSystem.Core.DTOs.Common;
 using ERPSystem.Core.DTOs.User;
 using ERPSystem.Core.Entities;
 using ERPSystem.Core.Exceptions;
 using ERPSystem.Core.Interfaces;
+using ERPSystem.Core.MappingProfiles.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace ERPSystem.Application.Services;
 
@@ -43,14 +44,8 @@ public class UserService : GenericService<User>, IUserService
     public async Task<PagedResultDto<UserDto>> GetAllUsersAsync(UserFilterDto filter)
     {
         var pagedUsers = await _userRepository.GetPagedUsersAsync(filter);
-        var userDtos = _mapper.Map<List<UserDto>>(pagedUsers.Items);
-        return new PagedResultDto<UserDto>
-        {
-            Items = userDtos,
-            TotalCount = pagedUsers.TotalCount,
-            PageNumber = pagedUsers.PageNumber,
-            PageSize = pagedUsers.PageSize
-        };
+
+        return pagedUsers.ToPagedResult<User, UserDto>(_mapper);
     }
 
     public async Task<UserDto> GetUserByIdAsync(int id)

@@ -18,9 +18,7 @@ namespace ERPSystem.API.Controllers
             _authService = authService;
         }
 
-        /// <summary>
-        /// Kullanıcı girişi
-        /// </summary>
+      
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
@@ -28,18 +26,16 @@ namespace ERPSystem.API.Controllers
             {
                 var response = await _authService.LoginAsync(loginDto);
 
-                // Refresh token'ı cookie'ye kaydet (güvenlik için)
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true, // HTTPS'de true olmalı
+                    Secure = true,
                     SameSite = SameSiteMode.Strict,
                     Expires = DateTime.UtcNow.AddDays(30)
                 };
 
                 Response.Cookies.Append("refreshToken", response.RefreshToken, cookieOptions);
 
-                // Response'dan refresh token'ı kaldır (güvenlik)
                 return Ok(new
                 {
                     AccessToken = response.AccessToken,
@@ -62,7 +58,6 @@ namespace ERPSystem.API.Controllers
         {
             try
             {
-                // Refresh token'ı cookie'den veya body'den al
                 var refreshToken = requestDto?.RefreshToken ?? Request.Cookies["refreshToken"];
 
                 if (string.IsNullOrEmpty(refreshToken))
@@ -70,7 +65,6 @@ namespace ERPSystem.API.Controllers
 
                 var response = await _authService.RefreshTokenAsync(refreshToken);
 
-                // Yeni refresh token'ı cookie'ye kaydet
                 var cookieOptions = new CookieOptions
                 {
                     HttpOnly = true,
@@ -94,21 +88,17 @@ namespace ERPSystem.API.Controllers
             }
         }
 
-        /// <summary>
-        /// Çıkış yapma
-        /// </summary>
+    
         [HttpPost("logout")]
         [Authorize]
         public async Task<IActionResult> Logout([FromBody] LogoutDto? logoutDto = null)
         {
             try
             {
-                // Refresh token'ı cookie'den veya body'den al
                 var refreshToken = logoutDto?.RefreshToken ?? Request.Cookies["refreshToken"];
 
                 await _authService.LogoutAsync(refreshToken ?? string.Empty);
 
-                // Cookie'yi temizle
                 Response.Cookies.Delete("refreshToken");
 
                 return Ok(new { Message = "Çıkış başarılı." });
@@ -141,9 +131,7 @@ namespace ERPSystem.API.Controllers
             }
         }
 
-        /// <summary>
-        /// Token doğrulama
-        /// </summary>
+
         [HttpGet("validate-token")]
         [Authorize]
         public IActionResult ValidateToken()
