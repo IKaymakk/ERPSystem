@@ -11,6 +11,7 @@ namespace ERPSystem.Core.Interfaces;
 public interface IGenericRepository<T> where T : BaseEntity
 {
     Task<T?> GetByIdAsync(int id, params Expression<Func<T, object>>[] includes);
+    Task<T?> GetByIdForUpdateAsync(int id, params Expression<Func<T, object>>[] includes);
     Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, params Expression<Func<T, object>>[] includes);
     Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);
     Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes);

@@ -7,32 +7,11 @@ namespace ERPSystem.Core.DTOs.Common
     /// <typeparam name="T">Response data tipi</typeparam>
     public class ApiResponse<T>
     {
-        /// <summary>
-        /// İşlem başarılı mı?
-        /// </summary>
         public bool IsSuccess { get; set; }
-
-        /// <summary>
-        /// İşlem mesajı
-        /// </summary>
         public string Message { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Response data'sı
-        /// </summary>
         public T? Data { get; set; }
-
-        /// <summary>
-        /// Hata detayları (varsa)
-        /// </summary>
         public List<string>? Errors { get; set; }
-
-        /// <summary>
-        /// Response oluşturma zamanı
-        /// </summary>
         public DateTime Timestamp { get; set; } = DateTime.Now;
-
-        // Constructors
         public ApiResponse()
         {
         }

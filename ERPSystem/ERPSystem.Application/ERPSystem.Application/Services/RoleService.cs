@@ -11,6 +11,7 @@ using ERPSystem.Core.DTOs.Role;
 using ERPSystem.Core.Entities;
 using ERPSystem.Core.Exceptions;
 using ERPSystem.Core.Interfaces;
+using ERPSystem.Core.MappingProfiles.Extensions;
 
 namespace ERPSystem.Application.Services;
 
@@ -41,14 +42,7 @@ public class RoleService : GenericService<Role>, IRoleService
     public async Task<PagedResultDto<RoleDto>> GetAllRolesAsync(RoleFilterDto filter)
     {
         var roles = await _roleRepository.GetPagedRolesAsync(filter);
-        var roleDtos = _mapper.Map<List<RoleDto>>(roles.Items); // ✅ Items property'sini map et
-        return new PagedResultDto<RoleDto>
-        {
-            Items = roleDtos,
-            PageNumber = filter.PageNumber,
-            PageSize = filter.PageSize,
-            TotalCount = filter.PageSize
-        };
+        return roles.ToPagedResult<Role, RoleDto>(_mapper);
     }
 
     public async Task<RoleDto> GetRoleByIdAsync(int id)
@@ -88,13 +82,16 @@ public class RoleService : GenericService<Role>, IRoleService
 
     public async Task AssignRoleToUserAsync(AssignRoleDto dto)
     {
-        var user = await _userRepository.GetByIdAsync(dto.UserId);
+        var user = await _userRepository.GetByIdForUpdateAsync(dto.UserId);
         if (user is null)
-            throw new BusinessException("Kullanıcı Bulunamadı");
+            throw new BusinessException("Kullanıcı bulunamadı");
 
-        var role = await _roleRepository.GetByIdAsync(dto.RoleId);
+        var role = await _roleRepository.GetByIdForUpdateAsync(dto.RoleId);
         if (role is null)
-            throw new BusinessException("Rol Bulunamadı");
+            throw new BusinessException("Rol bulunamadı");
+
+        if (user.RoleId == dto.RoleId)
+            throw new BusinessException("Bu kullanıcı zaten bu role sahip");
 
         user.RoleId = dto.RoleId;
         await _userRepository.UpdateAsync(user);

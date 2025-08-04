@@ -21,11 +21,10 @@ namespace ERPSystem.Infrastructure.Repositories
             _dbSet = context.Set<T>();
         }
 
-        // ID ile tek kayıt getir - READ ONLY için AsNoTracking
         public virtual async Task<T?> GetByIdAsync(int id, params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> query = _dbSet
-                .AsNoTracking() // ✅ READ ONLY - AsNoTracking eklendi
+                .AsNoTracking() 
                 .Where(x => x.Id == id && x.IsActive);
 
             query = ApplyIncludes(query, includes);
@@ -33,23 +32,20 @@ namespace ERPSystem.Infrastructure.Repositories
             return await query.FirstOrDefaultAsync();
         }
 
-        // Update için GetByIdAsync (tracking gerekli)
         public virtual async Task<T?> GetByIdForUpdateAsync(int id, params Expression<Func<T, object>>[] includes)
         {
-            IQueryable<T> query = _dbSet.Where(x => x.Id == id && x.IsActive); // Tracking aktif
-
+            IQueryable<T> query = _dbSet.Where(x => x.Id == id && x.IsActive);
             query = ApplyIncludes(query, includes);
 
             return await query.FirstOrDefaultAsync();
         }
 
-        // Tüm kayıtları getir - READ ONLY için AsNoTracking
         public async Task<IEnumerable<T>> GetAllAsync(
             Expression<Func<T, bool>>? filter = null,
             params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> query = _dbSet
-                .AsNoTracking() // ✅ READ ONLY - AsNoTracking eklendi
+                .AsNoTracking() 
                 .Where(x => x.IsActive);
 
             if (filter != null)
@@ -211,7 +207,6 @@ namespace ERPSystem.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        // Toplu soft delete - Tracking gerekli
         public async Task DeleteRangeAsync(IEnumerable<T> entities)
         {
             var entityList = entities.ToList();

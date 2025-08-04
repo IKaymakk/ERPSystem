@@ -14,13 +14,13 @@ public static class InfrastructureServiceRegistration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // DbContext kaydı
         services.AddDbContext<ErpDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
         services.AddScoped(typeof(IRoleRepository), typeof(RoleRepository));
+        services.AddScoped(typeof(ICategoryRepository), typeof(CategoryRepository));
 
         services.AddAutoMapper(cfg =>
         {

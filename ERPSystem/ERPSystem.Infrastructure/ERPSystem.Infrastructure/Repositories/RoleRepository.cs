@@ -7,8 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using ERPSystem.Core.Exceptions;
 
 namespace ERPSystem.Infrastructure.Repositories
 {
@@ -30,53 +32,73 @@ namespace ERPSystem.Infrastructure.Repositories
 
         public async Task<PagedResultDto<Role>> GetPagedRolesAsync(RoleFilterDto filter)
         {
-            IQueryable<Role> query = _dbSet.AsNoTracking()
-                .Where(x => x.IsActive)
-                .Include(x => x.Users.Where(u => u.IsActive));
+            // Filter expression
+            Expression<Func<Role, bool>>? filterExpression = x =>
+                x.IsActive &&
+                (!filter.IsActive.HasValue || x.IsActive == filter.IsActive.Value) &&
+                (!filter.CreatedDateFrom.HasValue || x.CreatedDate >= filter.CreatedDateFrom.Value) &&
+                (!filter.CreatedDateTo.HasValue || x.CreatedDate <= filter.CreatedDateTo.Value.AddDays(1)) &&
+                (string.IsNullOrEmpty(filter.SearchTerm) ||
+                 x.Name.Contains(filter.SearchTerm) ||
+                 (x.Description != null && x.Description.Contains(filter.SearchTerm))) &&
+                (string.IsNullOrEmpty(filter.Name) || x.Name.Contains(filter.Name)) &&
+                (string.IsNullOrEmpty(filter.Description) ||
+                 (x.Description != null && x.Description.Contains(filter.Description)));
 
-            // Filtreleme
-            if (!string.IsNullOrEmpty(filter.SearchTerm))
-                query = query.Where(x => x.Name.Contains(filter.SearchTerm) ||
-                                        (x.Description != null && x.Description.Contains(filter.SearchTerm)));
+            // Order by
+            Func<IQueryable<Role>, IOrderedQueryable<Role>>? orderBy = null;
+            if (!string.IsNullOrEmpty(filter.SortBy))
+            {
+                switch (filter.SortBy.ToLower())
+                {
+                    case "name":
+                        orderBy = filter.SortDescending ?
+                            q => q.OrderByDescending(x => x.Name) :
+                            q => q.OrderBy(x => x.Name);
+                        break;
+                    case "description":
+                        orderBy = filter.SortDescending ?
+                            q => q.OrderByDescending(x => x.Description) :
+                            q => q.OrderBy(x => x.Description);
+                        break;
+                    case "createddate":
+                        orderBy = filter.SortDescending ?
+                            q => q.OrderByDescending(x => x.CreatedDate) :
+                            q => q.OrderBy(x => x.CreatedDate);
+                        break;
+                    case "isactive":
+                        orderBy = filter.SortDescending ?
+                            q => q.OrderByDescending(x => x.IsActive) :
+                            q => q.OrderBy(x => x.IsActive);
+                        break;
+                    default:
+                        orderBy = q => q.OrderBy(x => x.Id);
+                        break;
+                }
+            }
+            else
+            {
+                orderBy = q => q.OrderBy(x => x.Id);
+            }
 
-            if (!string.IsNullOrEmpty(filter.Name))
-                query = query.Where(x => x.Name.Contains(filter.Name));
+            // Base repository'den veriyi al
+            var (data, totalCount) = await GetPagedAsync(
+                filter.PageNumber,
+                filter.PageSize,
+                filterExpression,
+                orderBy,
+                x => x.Users.Where(u => u.IsActive) // Include expression
+            );
 
-            if (!string.IsNullOrEmpty(filter.Description))
-                query = query.Where(x => x.Description != null && x.Description.Contains(filter.Description));
-
-            if (filter.IsActive.HasValue)
-                query = query.Where(x => x.IsActive == filter.IsActive.Value);
-
-            if (filter.CreatedDateFrom.HasValue)
-                query = query.Where(x => x.CreatedDate >= filter.CreatedDateFrom.Value);
-
-            if (filter.CreatedDateTo.HasValue)
-                query = query.Where(x => x.CreatedDate <= filter.CreatedDateTo.Value.AddDays(1));
-
-            // Toplam kayıt sayısı
-            var totalCount = await query.CountAsync();
-
-            // Sıralama
-            query = filter.SortDescending
-                ? query.OrderByDescending(GetSortExpression(filter.SortBy))
-                : query.OrderBy(GetSortExpression(filter.SortBy));
-
-            // Sayfalama
-            var items = await query
-                .Skip((filter.PageNumber - 1) * filter.PageSize)
-                .Take(filter.PageSize)
-                .ToListAsync();
-
+            // PagedResultDto'ya dönüştür
             return new PagedResultDto<Role>
             {
-                Items = items,
+                Items = data,
                 TotalCount = totalCount,
                 PageNumber = filter.PageNumber,
                 PageSize = filter.PageSize
             };
         }
-
         public async Task<Role?> GetRoleWithUsersAsync(int roleId)
         {
             return await _dbSet.AsNoTracking()
@@ -100,17 +122,5 @@ namespace ERPSystem.Infrastructure.Repositories
                 .AnyAsync(x => x.IsActive && x.RoleId == roleId);
         }
 
-        private static System.Linq.Expressions.Expression<Func<Role, object>> GetSortExpression(string? sortBy)
-        {
-            return sortBy?.ToLower() switch
-            {
-                "name" => x => x.Name,
-                "description" => x => x.Description ?? "",
-                "createddate" => x => x.CreatedDate,
-                "updateddate" => x => x.UpdatedDate ?? DateTime.MinValue,
-                "isactive" => x => x.IsActive,
-                _ => x => x.CreatedDate
-            };
-        }
     }
 }

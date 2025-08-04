@@ -24,6 +24,7 @@ namespace ERPSystem.Application.Registration
             services.AddScoped(typeof(IPasswordService), typeof(PasswordService));
             services.AddScoped(typeof(IJwtService), typeof(JwtService));
             services.AddScoped(typeof(IRoleService), typeof(RoleService));
+            services.AddScoped(typeof(ICategoryService), typeof(CategoryService));
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IAuthService, AuthService>();
             return services;
