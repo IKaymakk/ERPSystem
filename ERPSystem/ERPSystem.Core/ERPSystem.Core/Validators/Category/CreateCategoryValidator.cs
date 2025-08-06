@@ -41,7 +41,8 @@ public class CreateCategoryValidator : AbstractValidator<CreateCategoryDto>
 
     private async Task<bool> BeValidParentCategory(int? parentId, CancellationToken cancellationToken)
     {
-        if (!parentId.HasValue) return true;
+        if (!parentId.HasValue || parentId.Value <= 0)
+            return true; // Ana kategori
 
         var parent = await _categoryRepository.GetByIdAsync(parentId.Value);
         return parent != null && parent.IsActive;

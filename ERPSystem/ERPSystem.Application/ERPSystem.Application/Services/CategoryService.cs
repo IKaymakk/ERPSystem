@@ -49,7 +49,7 @@ namespace ERPSystem.Application.Services
                 throw new BusinessException($"Kategori adı '{createDto.Name}' zaten kullanılıyor.");
 
             // Parent validation
-            if (createDto.ParentCategoryId.HasValue)
+            if (createDto.ParentCategoryId.HasValue && createDto.ParentCategoryId.Value > 0)
             {
                 var parent = await _categoryRepository.GetByIdAsync(createDto.ParentCategoryId.Value);
                 if (parent == null || !parent.IsActive)
@@ -57,9 +57,10 @@ namespace ERPSystem.Application.Services
 
                 // Level kontrolü (maksimum 5 seviye)
                 var parentLevel = await _categoryRepository.GetLevelAsync(createDto.ParentCategoryId.Value);
-                if (parentLevel >= 4) // 0,1,2,3,4 = 5 seviye
+                if (parentLevel >= 4)
                     throw new BusinessException("Maksimum 5 seviye kategori hiyerarşisi oluşturulabilir.");
             }
+
 
             var category = _mapper.Map<Core.Entities.Category>(createDto);
             category.Code = createDto.Code.ToUpper(); // Kod her zaman büyük harf

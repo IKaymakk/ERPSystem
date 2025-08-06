@@ -152,6 +152,8 @@ namespace ERPSystem.Infrastructure.Repositories
 
             return level;
         }
+#pragma warning disable CA1862
+#pragma warning disable RCS1155
 
         public async Task<PagedResultDto<Category>> GetPagedCategoriesAsync(CategoryFilterDto filter)
         {

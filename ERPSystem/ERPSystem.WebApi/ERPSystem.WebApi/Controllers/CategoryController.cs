@@ -1,6 +1,9 @@
 ﻿using ERPSystem.Application.Interfaces;
 using ERPSystem.Core.DTOs.Category;
 using ERPSystem.Core.DTOs.Common;
+using ERPSystem.Core.Exceptions;
+using ERPSystem.Core.Interfaces;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -8,10 +11,12 @@ using Microsoft.AspNetCore.Mvc;
 public class CategoriesController : ControllerBase
 {
     private readonly ICategoryService _categoryService;
+    private readonly ICategoryRepository _categoryRepository;
 
-    public CategoriesController(ICategoryService categoryService)
+    public CategoriesController(ICategoryService categoryService, ICategoryRepository categoryRepository)
     {
         _categoryService = categoryService;
+        _categoryRepository = categoryRepository;
     }
 
     [HttpGet]
@@ -47,11 +52,13 @@ public class CategoriesController : ControllerBase
         => Ok(new { fullPath = await _categoryService.GetCategoryFullPathAsync(id) });
 
     [HttpPost]
-    public async Task<ActionResult<CategoryDto>> Create([FromBody] CreateCategoryDto createDto)
+    public async Task<IActionResult> Create([CustomizeValidator(Skip = true)][FromBody] CreateCategoryDto dto)
     {
-        var category = await _categoryService.CreateAsync(createDto);
+        var category = await _categoryService.CreateAsync(dto);
         return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
     }
+
+
 
     [HttpPut("{id}")]
     public async Task<ActionResult<CategoryDto>> Update(int id, [FromBody] UpdateCategoryDto updateDto)
