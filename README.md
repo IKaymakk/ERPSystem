@@ -4,7 +4,7 @@
 Bu proje, bir ERP (Enterprise Resource Planning) sisteminin geliştirilmesine yönelik bir çalışma olarak tasarlanmıştır. Sistem, modüler bir yapıda planlanmış ve her modül kendi içerisinde Entity → Service → API → UI sırasıyla geliştirilmiştir.
 
 Projede kullanılan başlıca teknolojiler:
-- Backend: .NET 8, ASP.NET Core, ASP.NET MVC, Entity Framework
+- Backend: .NET 8, ASP.NET Core, ASP.NET Web API, Entity Framework
 - Frontend: Angular veya React (En Son Aşama)
 - Database: MSSQL, Redis
 - Authentication: JWT, Role-based permissions
