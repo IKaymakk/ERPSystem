@@ -1,21 +1,19 @@
 ﻿using ERPSystem.Core.DTOs.Product;
 using ERPSystem.Core.Interfaces;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ERPSystem.Core.Validators.Product;
 
-public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
+public class UpdateProductDtoValidator : AbstractValidator<UpdateProductDto>
 {
     private readonly IProductRepository _productRepository;
 
-    public CreateProductDtoValidator(IProductRepository productRepository)
+    public UpdateProductDtoValidator(IProductRepository productRepository)
     {
         _productRepository = productRepository;
+
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("Product ID is required");
 
         RuleFor(x => x.Code)
             .NotEmpty().WithMessage("Product code is required")
@@ -43,9 +41,6 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
         RuleFor(x => x.PurchasePrice)
             .GreaterThanOrEqualTo(0).WithMessage("Purchase price must be greater than or equal to 0");
 
-        RuleFor(x => x.CurrentStock)
-            .GreaterThanOrEqualTo(0).WithMessage("Current stock must be greater than or equal to 0");
-
         RuleFor(x => x.MinStockLevel)
             .GreaterThanOrEqualTo(0).WithMessage("Minimum stock level must be greater than or equal to 0");
 
@@ -61,13 +56,13 @@ public class CreateProductDtoValidator : AbstractValidator<CreateProductDto>
             .MaximumLength(255).WithMessage("Image path cannot exceed 255 characters");
     }
 
-    private async Task<bool> BeUniqueCode(string code, CancellationToken cancellationToken)
+    private async Task<bool> BeUniqueCode(UpdateProductDto dto, string code, CancellationToken cancellationToken)
     {
-        return !await _productRepository.ExistsByCodeAsync(code);
+        return !await _productRepository.ExistsByCodeAsync(code, dto.Id);
     }
 
-    private async Task<bool> BeUniqueBarcode(string barcode, CancellationToken cancellationToken)
+    private async Task<bool> BeUniqueBarcode(UpdateProductDto dto, string barcode, CancellationToken cancellationToken)
     {
-        return !await _productRepository.ExistsByBarcodeAsync(barcode);
+        return !await _productRepository.ExistsByBarcodeAsync(barcode, dto.Id);
     }
 }

@@ -22,6 +22,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped(typeof(IRoleRepository), typeof(RoleRepository));
         services.AddScoped(typeof(ICategoryRepository), typeof(CategoryRepository));
         services.AddScoped(typeof(IUnitRepository), typeof(UnitRepository));
+        services.AddScoped(typeof(IProductRepository), typeof(ProductRepository));
 
         services.AddAutoMapper(cfg =>
         {
