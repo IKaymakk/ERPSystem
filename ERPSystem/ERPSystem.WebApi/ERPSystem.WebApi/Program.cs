@@ -69,6 +69,16 @@ builder.Services.AddFluentValidationAutoValidation()
     .AddFluentValidationClientsideAdapters();
 
 builder.Services.AddValidatorsFromAssembly(typeof(CreateUserDtoValidator).Assembly);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularApp", builder =>
+    {
+        builder.WithOrigins("http://localhost:4200") // Angular dev server
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+               .AllowCredentials();
+    });
+});
 
 
 var app = builder.Build();
@@ -80,6 +90,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseCustomExceptionMiddleware();
+app.UseCors("AllowAngularApp");
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();

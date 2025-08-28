@@ -21,10 +21,11 @@ public static class InfrastructureServiceRegistration
         services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
         services.AddScoped(typeof(IRoleRepository), typeof(RoleRepository));
         services.AddScoped(typeof(ICategoryRepository), typeof(CategoryRepository));
+        services.AddScoped(typeof(IUnitRepository), typeof(UnitRepository));
 
         services.AddAutoMapper(cfg =>
         {
-            cfg.AddMaps(typeof(UserMappingProfile).Assembly); 
+            cfg.AddMaps(typeof(UserMappingProfile).Assembly);
         });
         return services;
     }

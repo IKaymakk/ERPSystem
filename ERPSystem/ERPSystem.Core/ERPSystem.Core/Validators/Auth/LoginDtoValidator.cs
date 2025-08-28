@@ -16,7 +16,6 @@ public class LoginDtoValidator : AbstractValidator<LoginDto>
         //    .EmailAddress().WithMessage("Geçerli bir e-posta adresi giriniz.");
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Şifre zorunludur.")
-            .MinimumLength(6).WithMessage("Şifre en az 6 karakter olmalıdır.");
+            .NotEmpty().WithMessage("Şifre zorunludur.");
     }
 }
